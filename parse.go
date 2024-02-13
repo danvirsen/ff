@@ -85,6 +85,11 @@ func parse(fs Flags, args []string, options ...Option) error {
 					return nil
 				}
 
+				// If we have a filter and it doesn't match this flag, ignore it.
+				if pc.envVarFilter != nil && !pc.envVarFilter(f) {
+					return nil
+				}
+
 				// Look in the environment for each of the flag names.
 				for _, name := range getNameStrings(f) {
 					// Transform the flag name to an env var key.
@@ -176,6 +181,11 @@ func parse(fs Flags, args []string, options ...Option) error {
 					// env vars, then don't set it again. But be sure to allow
 					// config files to specify the same flag multiple times.
 					if provided.has(target) {
+						return nil
+					}
+
+					// If we have a filter and it doesn't match this flag, ignore it.
+					if pc.configFilter != nil && !pc.configFilter(target) {
 						return nil
 					}
 

@@ -7,16 +7,19 @@ import (
 
 // Option controls some aspect of parsing behavior.
 type Option func(*ParseContext)
+type Filter func(Flag) bool
 
 // ParseContext receives and maintains parse options.
 type ParseContext struct {
 	envVarEnabled bool
 	envVarPrefix  string
 	envVarSplit   string
+	envVarFilter  Filter
 
 	configFileName             string
 	configFlagName             string
 	configParseFunc            ConfigFileParseFunc
+	configFilter               Filter
 	configOpenFunc             func(string) (iofs.File, error)
 	configAllowMissingFile     bool
 	configIgnoreUndefinedFlags bool
@@ -57,6 +60,12 @@ func WithConfigFileFlag(flagname string) Option {
 func WithConfigFileParser(pf ConfigFileParseFunc) Option {
 	return func(pc *ParseContext) {
 		pc.configParseFunc = pf
+	}
+}
+
+func WithConfigFilter(filter Filter) Option {
+	return func(pc *ParseContext) {
+		pc.configFilter = filter
 	}
 }
 
@@ -103,6 +112,12 @@ func WithEnvVarPrefix(prefix string) Option {
 	return func(pc *ParseContext) {
 		pc.envVarEnabled = true
 		pc.envVarPrefix = prefix
+	}
+}
+
+func WithEnvVarFilter(filter Filter) Option {
+	return func(pc *ParseContext) {
+		pc.envVarFilter = filter
 	}
 }
 
